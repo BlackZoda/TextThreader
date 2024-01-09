@@ -88,6 +88,7 @@ const FileItem = ( { file } : { file: File } ) => {
     return (
         <li className="col-span-1 divide-y divide-gary-200 rounded-sm
                 bg-white shadow transition hover:shadow-lg">
+
             <Link href={`/dashboard/${file.id}`}
                 className="flex flex-col gap-2">
                 <div className="pt-6 px-6 flex w-full items-center
@@ -105,6 +106,7 @@ const FileItem = ( { file } : { file: File } ) => {
                     </div>
                 </div>
             </Link>
+
             <div className="px-6 mt-4 grid grid-cols-4 place-items-center
                     py-2 gap-6 text-xs text-gray-500">
                 <div className="col-span-2 flex gap-2 justify-self-start">
@@ -118,20 +120,16 @@ const FileItem = ( { file } : { file: File } ) => {
 
                 <Button onClick={() => deleteFile({ id: file.id })}
                         size="sm"
-                        className="w-full"
+                        className="w-full hover:bg-pink-300 hover:text-white"
                         variant="destructive">
                     {currentFileBeingDeleted === file.id ?
                         <Loader2 className="h-4 w-4 animate-spin" /> :
                         <Trash className="h-4 w-4" /> }
                 </Button>
+
             </div>
         </li>
     )
 }
 
 export default Dashboard;
-
-// Requirements:
-// - list files
-// - upload pdf
-// - delete files

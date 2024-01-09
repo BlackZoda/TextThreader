@@ -5,6 +5,7 @@ import { db } from '@/app/db';
 import { z } from 'zod';
  
 export const appRouter = router({
+
     authCallback: publicProcedure.query(async () => {
 
         const { getUser } = getKindeServerSession();
@@ -30,17 +31,23 @@ export const appRouter = router({
 
         return { success: true }
     }),
-    getUserFiles: privateProcedure.query(async ({ ctx }) => {
-        const { userId } = ctx;
 
-        return await db.file.findMany({
-            where: {
-                userId  
-            }
-        });
-    }),
-    deleteFile: privateProcedure.input(z.object({ id: z.string() }))
+    getUserFiles: privateProcedure
+        .query(async ({ ctx }) => {
+
+            const { userId } = ctx;
+
+            return await db.file.findMany({
+                where: {
+                    userId  
+                }
+            });
+        }),
+
+    deleteFile: privateProcedure
+        .input(z.object({ id: z.string() }))
         .mutation(async ({ ctx, input }) => {
+
             const { userId } = ctx
 
             const file = await db.file.findFirst({
@@ -60,7 +67,9 @@ export const appRouter = router({
             });
 
             return file;
-    }),
+
+        }),
+
 });
  
 export type AppRouter = typeof appRouter;

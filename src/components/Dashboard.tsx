@@ -2,31 +2,20 @@
 
 import { trpc } from "@/app/_trpc/client";
 import UploadButton from "./UploadButton";
-import { Ghost, MessageSquare, Plus, Trash } from "lucide-react";
+import { Ghost, Loader2, MessageSquare, Plus, Trash } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { format } from "date-fns";
 import { $Enums } from "@prisma/client";
 import { Button } from "./ui/button";
-
-interface File {
-    id: string;
-    userId: string | null;
-    name: string;
-    uploadStatus: $Enums.UploadStatus;
-    url: string;
-    key: string;
-    createdAt: string;
-    updatedAt: string;
-}
+import { useState } from "react";
 
 const Dashboard = () => {
 
     return (
         <main className="mx-auto max-w-7xl md:p-10">
             <div className="mt-8 flex flex-col items-start justify-between
-                    gap-4 border-b border-gray-200 pb-5 sm:flex-row
-                    sm:items-center sm:gap-0">
+                    pb-5 sm:flex-row sm:items-center sm:gap-0">
                 <h1 className="b-3 font-bold text-5xl text-gray-900">
                     My Files
                 </h1>
@@ -66,11 +55,38 @@ const FileList = () => {
     )
 }
 
+interface File {
+    id: string;
+    userId: string | null;
+    name: string;
+    uploadStatus: $Enums.UploadStatus;
+    url: string;
+    key: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 
 const FileItem = ( { file } : { file: File } ) => {
 
+    const [currentFileBeingDeleted, setCurrentFileBeingDeleted] = useState<string | null>(null);
+
+    const utils = trpc.useUtils()
+
+    const { mutate: deleteFile } = trpc.deleteFile.useMutation({
+        onSuccess: () => {
+            utils.getUserFiles.invalidate();
+        },
+        onMutate: ({ id }) => {
+            setCurrentFileBeingDeleted(id);
+        },
+        onSettled: () => {
+            setCurrentFileBeingDeleted(null);
+        },
+    })
+
     return (
-        <li className="col-span-1 divide-y divide-gary-200
+        <li className="col-span-1 divide-y divide-gary-200 rounded-sm
                 bg-white shadow transition hover:shadow-lg">
             <Link href={`/dashboard/${file.id}`}
                 className="flex flex-col gap-2">
@@ -89,19 +105,24 @@ const FileItem = ( { file } : { file: File } ) => {
                     </div>
                 </div>
             </Link>
-            <div className="px-6 mt-4 grid grid-cols-5 place-items-center
+            <div className="px-6 mt-4 grid grid-cols-4 place-items-center
                     py-2 gap-6 text-xs text-gray-500">
-                <div className="flex items-center gap-2">
+                <div className="col-span-2 flex gap-2 justify-self-start">
                     <Plus className="h-4 w-3" />
                         {format(new Date(file.createdAt), "yyyy-MM-dd")}
                 </div>
-                <div>
+                <div className="flex-items-center-gap2">
                     <MessageSquare className="h-4 w-4" />
                     mocked
                 </div>
 
-                <Button size="sm" className="w-full" variant="destructive">
-                    <Trash className="h-4 w-4" />
+                <Button onClick={() => deleteFile({ id: file.id })}
+                        size="sm"
+                        className="w-full"
+                        variant="destructive">
+                    {currentFileBeingDeleted === file.id ?
+                        <Loader2 className="h-4 w-4 animate-spin" /> :
+                        <Trash className="h-4 w-4" /> }
                 </Button>
             </div>
         </li>
